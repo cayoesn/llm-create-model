@@ -4,8 +4,6 @@ __pycache__
 .pytest_cache
 .coverage
 htmlcov
-models/checkpoints/*
-!models/checkpoints/.gitkeep
 .env
 mlruns
 logs

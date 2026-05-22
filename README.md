@@ -186,7 +186,7 @@ curl -X POST http://localhost:8000/generate \
 ## 🔎 Como Verificar Cada Serviço
 
 ### 🌐 FastAPI
-- Health: `curl http://localhost:8000/health` (se implementado)
+- Health: `curl http://localhost:8000/health`
 - Docs: `http://localhost:8000/docs`
 - Metrics: `http://localhost:8000/metrics`
 

@@ -1,158 +1,255 @@
 # MiniLLMOps
 
-MiniLLMOps is a complete educational LLMOps platform that trains and serves a mini GPT-style language model from scratch using PyTorch. This project is designed to demonstrate the entire lifecycle of an LLM project, from data preparation and model architecture to training, serving, and production-grade observability.
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2?style=for-the-badge)
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
 
-## Table of Contents
+> Plataforma educacional completa de LLMOps para treinamento e serviço de um mini modelo de linguagem (GPT-style) do zero.
 
-- [Project Overview](#project-overview)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Venv Setup](#venv-setup)
-- [Installation](#installation)
-- [Training Instructions](#training-instructions)
-- [API Instructions](#api-instructions)
-- [Docker Instructions](#docker-instructions)
-- [Testing Instructions](#testing-instructions)
-- [MLflow Usage](#mlflow-usage)
-- [Grafana Usage](#grafana-usage)
-- [Tokenizer Explanation](#tokenizer-explanation)
-- [Transformer Explanation](#transformer-explanation)
-- [Causal Masking Explanation](#causal-masking-explanation)
-- [Autoregressive Generation Explanation](#autoregressive-generation-explanation)
-- [Observability Explanation](#observability-explanation)
-- [Tracing Explanation](#tracing-explanation)
+Este projeto demonstra o ciclo de vida completo de um projeto de LLM, desde a preparação dos dados e arquitetura do modelo até o treinamento, serviço via API e observabilidade de nível de produção. O modelo é um transformer "decoder-only" treinado no dataset Tiny Shakespeare.
 
-## Project Overview
+## 📚 Sumário
 
-The goal of this project is to build a character-level language model trained on the Tiny Shakespeare dataset. The model is a decoder-only transformer, similar to the architecture used in GPT models.
+- [🧭 Visão Geral](#visao-geral)
+- [🏗️ Arquitetura](#arquitetura)
+- [🔄 Fluxos do Projeto](#fluxos-do-projeto)
+- [🧰 Tecnologias e Serviços](#tecnologias-e-servicos)
+- [📁 Estrutura do Repositório](#estrutura-do-repositorio)
+- [🚀 Instalação](#instalacao)
+- [🧪 Como Usar](#como-usar)
+- [🔎 Como Verificar Cada Serviço](#como-verificar-cada-servico)
+- [📊 Observabilidade](#observabilidade)
+- [✅ Testes e Coverage](#testes-e-coverage)
+- [📖 Conceitos Teóricos](#conceitos-teoricos)
+- [🛠️ Troubleshooting](#troubleshooting)
 
-## Architecture
+<a id="visao-geral"></a>
 
-The system consists of several components:
-- **Model:** A custom transformer implementation using PyTorch.
-- **Training Pipeline:** A manual training loop with MLflow integration for experiment tracking.
-- **API:** A FastAPI application for serving predictions.
-- **Observability:** Prometheus for metrics, OpenTelemetry for tracing, and Grafana for dashboards.
-- **Infrastructure:** Docker and Docker Compose for easy deployment.
+## 🧭 Visão Geral
 
-## Project Structure
+O MiniLLMOps foca em ensinar os fundamentos de grandes modelos de linguagem (LLMs) através da implementação prática de um modelo de nível de caractere. O projeto cobre:
+
+- Implementação de um Transformer personalizado em PyTorch.
+- Pipeline de treinamento manual com rastreamento de experimentos via MLflow.
+- Serviço de inferência autoregressiva via FastAPI.
+- Coleta de métricas com Prometheus e visualização no Grafana.
+- Tracing distribuído com OpenTelemetry.
+- Containerização completa para implantação reprodutível.
+
+<a id="arquitetura"></a>
+
+## 🏗️ Arquitetura
+
+```mermaid
+graph TD
+    Data[Tiny Shakespeare Dataset] --> Train[Training Pipeline]
+    Train -->|Log Metrics/Artifacts| MLflow[MLflow Server]
+    Train -->|Save Checkpoints| Models[(Models/ Checkpoints)]
+
+    Models --> API[FastAPI API]
+    User[Usuário] -->|Prompt| API
+    API -->|Generate| Model[PyTorch Model]
+    Model --> API
+    API -->|Response| User
+
+    API -->|Metrics| Prometheus[Prometheus]
+    Prometheus --> Grafana[Grafana]
+    API -. Tracing .-> OTEL[OpenTelemetry/Jaeger]
+```
+
+<a id="fluxos-do-projeto"></a>
+
+## 🔄 Fluxos do Projeto
+
+### 🚂 Fluxo 1: Treinamento do Modelo
+
+1. O pipeline carrega o arquivo `tiny_shakespeare.txt`.
+2. O tokenizer de nível de caractere mapeia caracteres para inteiros.
+3. O modelo Transformer (Decoder-only) é inicializado.
+4. O loop de treinamento executa épocas, calculando a perda (loss).
+5. O MLflow registra hiperparâmetros (lr, batch size) e métricas (loss, perplexity).
+6. Checkpoints e o vocabulário são salvos no diretório `models/`.
+
+### 💬 Fluxo 2: Inferência (Geração)
+
+1. O usuário envia um prompt via `POST /generate`.
+2. A API carrega o modelo e o vocabulário (se não estiverem em memória).
+3. O prompt é codificado pelo tokenizer.
+4. O modelo gera novos tokens de forma autoregressiva usando amostragem de temperatura e top-k.
+5. Os tokens são decodificados de volta para texto.
+6. A resposta é retornada ao usuário, e o trace da requisição é enviado ao Jaeger.
+
+<a id="tecnologias-e-servicos"></a>
+
+## 🧰 Tecnologias e Serviços
+
+| Serviço | Tecnologia | Porta | Por que foi incluído | O que verificar |
+|---|---:|---:|---|---|
+| 🌐 API | FastAPI | `8000` | Serve predições do modelo e expõe métricas. | `/docs`, `/metrics`, `/generate`. |
+| 🚂 Training | PyTorch | - | Engine de deep learning para o Transformer. | Logs do container de treinamento. |
+| 🧾 Experimentos | MLflow | `5000` | Rastreia runs, métricas e artefatos. | Dashboards de experimentos e runs. |
+| 📈 Métricas | Prometheus | `9090` | Coleta métricas da API. | Status dos targets. |
+| 📊 Visualização | Grafana | `3000` | Visualiza latência e performance. | Dashboards de latência e request counts. |
+| 🧵 Tracing | OpenTelemetry | - | Rastreia o fluxo da requisição (encodagem, inferência, decodagem). | Traces no Jaeger. |
+
+<a id="estrutura-do-repositorio"></a>
+
+## 📁 Estrutura do Repositório
 
 ```text
-mini-llmops/
-├── app/
-│   ├── api/                # FastAPI application
-│   ├── model/              # Transformer model components
-│   ├── training/           # Training and dataset logic
-│   ├── observability/      # Tracing, metrics, and tracking
-│   ├── config/             # Configuration settings
-│   └── utils/              # Utility functions
-├── data/                   # Dataset storage (includes tiny_shakespeare.txt)
-├── models/                 # Model checkpoints and vocabulary
-├── tests/                  # Unit and integration tests
-├── docker/                 # Dockerfiles and infrastructure config
-├── docker-compose.yml
-├── requirements.txt
-├── pyproject.toml
-├── Makefile
-└── README.md
+app/
+├── api/                FastAPI application e endpoints
+├── model/              Componentes do modelo Transformer (PyTorch)
+├── training/           Lógica de treinamento e dataset
+├── observability/      Configuração de Tracing, métricas e tracking
+├── config/             Configurações globais
+└── utils/              Funções utilitárias
+data/                   Armazenamento do dataset (tiny_shakespeare.txt)
+models/                 Checkpoints do modelo e vocabulário
+tests/                  Testes unitários e de integração
+docker/                 Dockerfiles e configurações de infra
+docker-compose.yml      Stack completa
+Makefile                Atalhos de comandos
+requirements.txt        Dependências do projeto
 ```
 
-## Venv Setup
+<a id="instalacao"></a>
 
-### Linux/macOS:
+## 🚀 Instalação
+
+### 📋 Pré-requisitos
+
+- Docker e Docker Compose
+- Python 3.11+
+- `make` (opcional)
+
+### 1. 🧩 Configurar ambiente
+
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+cp .env.example .env
 ```
 
-### Windows:
+### 2. 🐍 Venv (Opcional - para desenvolvimento local)
+
+**Windows:**
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-```
-
-## Installation
-
-```bash
 pip install -r requirements.txt
 ```
 
-The dataset is already included in the `data/` directory.
+**Linux/macOS:**
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-## Training Instructions
+<a id="como-usar"></a>
 
-To train the model using Docker:
+## 🧪 Como Usar
+
+### 🚂 Treinar o Modelo
+
+Para iniciar o treinamento via Docker:
 ```bash
 make train
 ```
-This will start the training process in a container and save checkpoints to the `models/` directory (mapped via volume).
+Isso salvará os checkpoints e o vocabulário no diretório `models/`.
 
-## API Instructions
+### 🌐 Subir a API
 
-To start the API using Docker:
+Para rodar apenas a API:
 ```bash
 make api
 ```
-The API will be available at `http://localhost:8000`.
 
-### Example Generation Request:
+### 🐳 Subir a Stack Completa
+
+```bash
+make docker-up
+```
+
+### 💬 Testar Geração
+
 ```bash
 curl -X POST http://localhost:8000/generate \
 -H "Content-Type: application/json" \
 -d '{"prompt":"To be or not to be"}'
 ```
 
-## Docker Instructions
+<a id="como-verificar-cada-servico"></a>
 
-To start the entire stack (API, MLflow, Prometheus, Grafana):
-```bash
-make docker-up
-```
+## 🔎 Como Verificar Cada Serviço
 
-## Testing Instructions
+### 🌐 FastAPI
+- Health: `curl http://localhost:8000/health` (se implementado)
+- Docs: `http://localhost:8000/docs`
+- Metrics: `http://localhost:8000/metrics`
 
-To run tests locally:
+### 🧾 MLflow
+- UI: `http://localhost:5000`
+- Verifique se as runs de treinamento aparecem com as métricas de Loss e Perplexity.
+
+### 📊 Grafana
+- UI: `http://localhost:3000`
+- Configure o datasource Prometheus (`http://prometheus:9090`) para visualizar métricas de latência.
+
+<a id="observabilidade"></a>
+
+## 📊 Observabilidade
+
+- **Prometheus:** Coleta métricas da API via endpoint `/metrics`.
+- **OpenTelemetry:** Utilizado para tracing distribuído, permitindo ver a latência de cada etapa (encoding, inference, decoding).
+- **Structured Logging:** Logs em formato JSON para facilitar a análise.
+
+<a id="testes-e-coverage"></a>
+
+## ✅ Testes e Coverage
+
+Para rodar os testes localmente:
 ```bash
 make test
 ```
 
-## MLflow Usage
+Para gerar relatório de coverage:
+```bash
+make coverage
+```
 
-MLflow is used to track experiments. You can view the dashboard at `http://localhost:5000`. It captures:
-- Hyperparameters (learning rate, batch size, etc.)
-- Metrics (loss, perplexity)
-- Artifacts (checkpoints, vocabulary)
+<a id="conceitos-teoricos"></a>
 
-## Grafana Usage
+## 📖 Conceitos Teóricos
 
-Grafana is used for real-time monitoring. Access it at `http://localhost:3000`. You can create dashboards to monitor API latency, request counts, and model performance.
+### 🔤 Tokenizer
+Usamos um tokenizer de nível de caractere personalizado. Ele mapeia cada caractere único no texto de treinamento para um número inteiro único. É a forma mais simples de tokenização, ideal para fins educacionais.
 
-## Tokenizer Explanation
+### 🧠 Transformer
+O modelo é um Transformer "decoder-only" que utiliza:
+- **Token Embeddings:** Mapeia IDs de tokens para vetores.
+- **Positional Embeddings:** Aprende a posição de cada token na sequência.
+- **Multi-Head Attention:** Permite ao modelo focar em diferentes partes da sequência simultaneamente.
+- **FeedForward Network:** Uma MLP aplicada a cada token.
+- **Layer Normalization:** Estabiliza o treinamento.
 
-We use a custom character-level tokenizer. It maps every unique character in the training text to a unique integer. This is the simplest form of tokenization and is excellent for educational purposes.
+### 🎭 Causal Masking
+No mecanismo de self-attention, usamos uma máscara causal (matriz triangular inferior). Isso garante que, ao prever o próximo token, o modelo veja apenas os tokens que vieram antes dele, impedindo que ele "cole" do futuro.
 
-## Transformer Explanation
+### 🔄 Geração Autoregressiva
+A geração é feita um token por vez. O modelo prevê o próximo token, que é anexado à sequência e usado como entrada para a próxima predição. Suportamos amostragem de temperatura e top-k para controlar a aleatoriedade e qualidade do texto.
 
-The model is a decoder-only transformer. It uses:
-- **Token Embeddings:** Maps token IDs to vectors.
-- **Positional Embeddings:** Learns the position of each token in the sequence.
-- **Multi-Head Attention:** Allows the model to attend to different parts of the sequence simultaneously.
-- **FeedForward Network:** A point-wise MLP applied to each token.
-- **Layer Normalization:** Stabilizes training.
+<a id="troubleshooting"></a>
 
-## Causal Masking Explanation
+## 🛠️ Troubleshooting
 
-In the self-attention mechanism, we use a causal mask (a lower triangular matrix of ones). This ensures that when predicting the next token, the model can only "see" tokens that came before it, preventing it from "cheating" by looking at the future.
+### ❌ Erro de "Model not found" na API
+Certifique-se de que você executou o treinamento (`make train`) antes de subir a API, ou que existam arquivos `.pt` e `.pkl` válidos no diretório `models/`.
 
-## Autoregressive Generation Explanation
+### 📈 MLflow não conecta
+Verifique se o container `mlflow` está rodando e se a variável `MLFLOW_TRACKING_URI` no `.env` está correta.
 
-Generation is done one token at a time. The model predicts the next token, which is then appended to the sequence and used as input for the next prediction. We support temperature sampling and top-k filtering to control the randomness and quality of the generated text.
-
-## Observability Explanation
-
-- **Prometheus:** Scrapes the `/metrics` endpoint to collect API and model metrics.
-- **Structured Logging:** Logs are emitted in JSON format for easier ingestion and analysis.
-
-## Tracing Explanation
-
-We use OpenTelemetry to trace requests through the API. This allows us to see the latency of different stages (encoding, inference, decoding) and track the flow of data through the system.
+### 🐳 Conflito de portas
+Se as portas `8000`, `5000` ou `3000` estiverem ocupadas, altere os mapeamentos no `docker-compose.yml`.

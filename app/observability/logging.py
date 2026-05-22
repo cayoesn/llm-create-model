@@ -1,15 +1,17 @@
+import json
 import logging
 import sys
-import json
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any
+
 
 class StructuredFormatter(logging.Formatter):
     """
     JSON structured logger.
     """
+
     def format(self, record: logging.LogRecord) -> str:
-        log_record: Dict[str, Any] = {
+        log_record: dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat(),
             "level": record.levelname,
             "message": record.getMessage(),
@@ -19,6 +21,7 @@ class StructuredFormatter(logging.Formatter):
         if record.exc_info:
             log_record["exception"] = self.formatException(record.exc_info)
         return json.dumps(log_record)
+
 
 def setup_logging(level: str = "INFO") -> None:
     """

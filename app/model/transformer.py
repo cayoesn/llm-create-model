@@ -1,22 +1,30 @@
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
-from typing import Tuple, Optional
+from torch.nn import functional as f
 
 from app.model.embeddings import MiniGPTEmbeddings
 from app.model.transformer_block import Block
 
+
 class MiniGPT(nn.Module):
     """
     The MiniGPT language model.
-    
+
     A decoder-only transformer model designed for character-level language modeling.
     """
 
-    def __init__(self, vocab_size: int, n_embd: int, n_head: int, n_layer: int, block_size: int, dropout: float) -> None:
+    def __init__(
+        self,
+        vocab_size: int,
+        n_embd: int,
+        n_head: int,
+        n_layer: int,
+        block_size: int,
+        dropout: float,
+    ) -> None:
         """
         Initializes the MiniGPT model.
-        
+
         Args:
             vocab_size: The size of the vocabulary.
             n_embd: The dimensionality of the embeddings.
@@ -27,15 +35,17 @@ class MiniGPT(nn.Module):
         """
         super().__init__()
         self.block_size = block_size
-        
+
         self.embeddings = MiniGPTEmbeddings(vocab_size, n_embd, block_size)
-        self.blocks = nn.Sequential(*[Block(n_embd, n_head, block_size, dropout) for _ in range(n_layer)])
-        self.ln_f = nn.LayerNorm(n_embd) # Final layer norm
+        self.blocks = nn.Sequential(
+            *[Block(n_embd, n_head, block_size, dropout) for _ in range(n_layer)]
+        )
+        self.ln_f = nn.LayerNorm(n_embd)  # Final layer norm
         self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
 
         # Initialize weights
         self.apply(self._init_weights)
-        
+
         # Report number of parameters
         print(f"Number of parameters: {sum(p.numel() for p in self.parameters())/1e6:.2f}M")
 
@@ -50,31 +60,33 @@ class MiniGPT(nn.Module):
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx: torch.Tensor, targets: Optional[torch.Tensor] = None) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+    def forward(
+        self, idx: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Forward pass for the MiniGPT model.
-        
+
         Args:
             idx: A tensor of shape (B, T) containing token IDs.
             targets: An optional tensor of shape (B, T) containing target token IDs.
-            
+
         Returns:
-            A tuple (logits, loss). Logits is (B, T, vocab_size). 
+            A tuple (logits, loss). Logits is (B, T, vocab_size).
             Loss is a scalar tensor if targets are provided, else None.
         """
-        B, T = idx.shape
+        b, t = idx.shape
 
         # idx and targets are both (B, T) tensor of integers
-        x = self.embeddings(idx) # (B, T, C)
-        x = self.blocks(x) # (B, T, C)
-        x = self.ln_f(x) # (B, T, C)
-        logits = self.lm_head(x) # (B, T, vocab_size)
+        x = self.embeddings(idx)  # (B, T, C)
+        x = self.blocks(x)  # (B, T, C)
+        x = self.ln_f(x)  # (B, T, C)
+        logits = self.lm_head(x)  # (B, T, vocab_size)
 
         loss = None
         if targets is not None:
-            B, T, C = logits.shape
-            logits = logits.view(B*T, C)
-            targets = targets.view(B*T)
-            loss = F.cross_entropy(logits, targets)
+            b, t, c = logits.shape
+            logits = logits.view(b * t, c)
+            targets = targets.view(b * t)
+            loss = f.cross_entropy(logits, targets)
 
         return logits, loss

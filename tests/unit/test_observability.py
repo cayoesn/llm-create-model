@@ -1,7 +1,8 @@
-import logging
-from app.observability.logging import setup_logging, StructuredFormatter
 import json
-import io
+import logging
+
+from app.observability.logging import StructuredFormatter, setup_logging
+
 
 def test_structured_formatter():
     formatter = StructuredFormatter()
@@ -12,13 +13,14 @@ def test_structured_formatter():
         lineno=10,
         msg="test message",
         args=None,
-        exc_info=None
+        exc_info=None,
     )
     formatted = formatter.format(log_record)
     data = json.loads(formatted)
     assert data["message"] == "test message"
     assert data["level"] == "INFO"
     assert "timestamp" in data
+
 
 def test_setup_logging():
     setup_logging("DEBUG")

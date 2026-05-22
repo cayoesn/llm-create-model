@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
+
 from app.model.attention import CausalSelfAttention
+
 
 class FeedForward(nn.Module):
     """
@@ -10,7 +12,7 @@ class FeedForward(nn.Module):
     def __init__(self, n_embd: int, dropout: float) -> None:
         """
         Initializes the feedforward network.
-        
+
         Args:
             n_embd: The dimensionality of the embeddings.
             dropout: The dropout probability.
@@ -29,18 +31,19 @@ class FeedForward(nn.Module):
         """
         return self.net(x)
 
+
 class Block(nn.Module):
     """
     A Transformer decoder block.
-    
-    Contains one layer of causal self-attention and one layer of feedforward 
+
+    Contains one layer of causal self-attention and one layer of feedforward
     neural network, with layer normalization and residual connections.
     """
 
     def __init__(self, n_embd: int, n_head: int, block_size: int, dropout: float) -> None:
         """
         Initializes the transformer block.
-        
+
         Args:
             n_embd: The dimensionality of the embeddings.
             n_head: The number of attention heads.
@@ -56,8 +59,8 @@ class Block(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass for the transformer block.
-        
-        Applies layer normalization before attention and feedforward layers 
+
+        Applies layer normalization before attention and feedforward layers
         (pre-norm architecture) and adds residual connections.
         """
         x = x + self.attn(self.ln_1(x))

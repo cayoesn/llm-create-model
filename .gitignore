@@ -6,8 +6,6 @@ __pycache__
 htmlcov
 models/checkpoints/*
 !models/checkpoints/.gitkeep
-data/*
-!data/.gitkeep
 .env
 mlruns
 logs

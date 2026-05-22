@@ -12,7 +12,7 @@ format:
 	ruff check . --fix
 
 coverage:
-	python -m pytest --cov=app --cov-report=html
+	python -m pytest --cov=app --cov-report=html:tests/htmlcov
 
 train:
 	docker-compose run --rm training

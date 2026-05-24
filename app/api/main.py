@@ -6,8 +6,8 @@ from app.observability.metrics import metrics_endpoint
 from app.observability.tracing import setup_tracing
 
 app = FastAPI(
-    title="MiniLLMOps API",
-    description="Educational LLMOps platform serving a mini GPT-style model.",
+    title="mini-gpt API",
+    description="Educational platform serving a mini GPT-style model.",
     version="1.0.0",
 )
 

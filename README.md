@@ -1,4 +1,4 @@
-# MiniLLMOps
+# mini-gpt
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
@@ -7,7 +7,7 @@
 ![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2?style=for-the-badge)
 ![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
 
-> Plataforma educacional completa de LLMOps para treinamento e serviço de um mini modelo de linguagem (GPT-style) do zero.
+> Plataforma educacional completa para treinamento e serviço de um mini modelo de linguagem (GPT-style) do zero.
 
 Este projeto demonstra o ciclo de vida completo de um projeto de LLM, desde a preparação dos dados e arquitetura do modelo até o treinamento, serviço via API e observabilidade de nível de produção. O modelo é um transformer "decoder-only" treinado no dataset Tiny Shakespeare.
 
@@ -30,7 +30,7 @@ Este projeto demonstra o ciclo de vida completo de um projeto de LLM, desde a pr
 
 ## 🧭 Visão Geral
 
-O MiniLLMOps foca em ensinar os fundamentos de grandes modelos de linguagem (LLMs) através da implementação prática de um modelo de nível de caractere. O projeto cobre:
+O mini-gpt foca em ensinar os fundamentos de grandes modelos de linguagem (LLMs) através da implementação prática de um modelo de nível de caractere. O projeto cobre:
 
 - Implementação de um Transformer personalizado em PyTorch.
 - Pipeline de treinamento manual com rastreamento de experimentos via MLflow.
@@ -197,6 +197,10 @@ curl -X POST http://localhost:8000/generate \
 ### 📊 Grafana
 - UI: `http://localhost:3000`
 - Configure o datasource Prometheus (`http://prometheus:9090`) para visualizar métricas de latência.
+
+### 🧵 Jaeger (Tracing)
+- UI: `http://localhost:16686`
+- Verifique os traces detalhados de inferência (`generate_text`) para analisar o tempo gasto em cada etapa.
 
 <a id="observabilidade"></a>
 

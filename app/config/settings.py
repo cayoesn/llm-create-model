@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     # MLflow Settings
     MLFLOW_TRACKING_URI: str | None = "http://localhost:5000"
-    MLFLOW_EXPERIMENT_NAME: str = "mini-llmops"
+    MLFLOW_EXPERIMENT_NAME: str = "mini-gpt"
 
     # Observability
     OTEL_EXPORTER_OTLP_ENDPOINT: str | None = "http://localhost:4317"

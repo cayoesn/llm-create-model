@@ -22,7 +22,7 @@ help:
 
 install:
 	python -m venv $(VENV)
-	$(PIP) install -r requirements.txt
+	$(PIP) install -e .[dev]
 
 run:
 	$(PYTHON) -m uvicorn app.api.main:app --reload --host 0.0.0.0 --port 8000

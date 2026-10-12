@@ -69,3 +69,26 @@ def test_generation():
     idx = torch.randint(0, vocab_size, (1, 5))
     out = generate(model, idx, max_new_tokens=5)
     assert out.shape == (1, 10)
+
+
+def test_generation_top_p_and_repetition_penalty():
+    vocab_size = 10
+    n_embd = 16
+    n_head = 4
+    n_layer = 2
+    block_size = 32
+    dropout = 0.1
+    model = MiniGPT(vocab_size, n_embd, n_head, n_layer, block_size, dropout)
+    idx = torch.randint(0, vocab_size, (1, 4))
+    
+    # Executa com Top-P (Nucleus Sampling) e Repetition Penalty
+    out = generate(
+        model,
+        idx,
+        max_new_tokens=6,
+        temperature=0.8,
+        top_k=5,
+        top_p=0.9,
+        repetition_penalty=1.2,
+    )
+    assert out.shape == (1, 10)

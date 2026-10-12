@@ -32,7 +32,8 @@ Este projeto demonstra o ciclo de vida completo de um projeto de LLM, desde a pr
 
 O mini-gpt foca em ensinar os fundamentos de grandes modelos de linguagem (LLMs) através da implementação prática de um modelo de nível de caractere. O projeto cobre:
 
-- Implementação de um Transformer personalizado em PyTorch.
+- Implementação de um Transformer personalizado em PyTorch com Causal Self-Attention.
+- Mecanismo de amostragem avançada: Temperature Scaling, Top-K, Top-P (Nucleus Sampling) e Repetition Penalty.
 - Pipeline de treinamento manual com rastreamento de experimentos via MLflow.
 - Serviço de inferência autoregressiva via FastAPI.
 - Coleta de métricas com Prometheus e visualização no Grafana.
@@ -212,16 +213,16 @@ curl -X POST http://localhost:8000/generate \
 
 <a id="testes-e-coverage"></a>
 
-## ✅ Testes e Coverage
+## ✅ Testes e Coverage (100% Hermético)
 
-Para rodar os testes localmente:
+Para rodar os testes hermeticamente via container:
 ```bash
-make test
+docker run --rm -v $(pwd):/workspace -w /workspace -e PYTHONPATH=/workspace portfolio-spec-engine:test pytest tests -v --cov=app --cov-report=term-missing
 ```
 
-Para gerar relatório de coverage:
+Ou localmente via Makefile:
 ```bash
-make coverage
+make test
 ```
 
 <a id="conceitos-teoricos"></a>
